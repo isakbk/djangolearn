@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>rest_framework · Hierarchy Tree</title>
+<title>Django + DRF · Hierarchy Tree</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -253,11 +253,11 @@ body {
 <body>
 <div class="canvas">
 
-  <div class="title">rest_framework <span>hierarchy tree · 50 topics</span></div>
+  <div class="title">Django + DRF <span>hierarchy tree · 73 topics</span></div>
 
   <nav class="tabs" role="tablist" id="tabs"></nav>
 
-  <section class="panel" id="p0">
+  <section class="panel" id="p3" hidden>
   <div class="system-bar">
     <div class="sys-badge">System: <span class="val">Django REST Framework</span></div>
     <div class="sys-badge">Parameters: <span class="val">request · response · status · format</span></div>
@@ -384,6 +384,49 @@ body {
   var tip = document.getElementById('tip');
 
   var D = {
+
+  /* ---- Django modules ---- */
+  'django.db.models':['Database table लाई Python class को रूपमा define गर्ने ORM। हरेक class एउटा table र हरेक field एउटा column हुन्छ। बनाएपछि makemigrations र migrate चलाउनुपर्छ।','class Name(models.Model):\n    field = models.CharField(max_length=100)\n    class Meta:\n        ordering = ["field"]','class Post(models.Model):\n    title = models.CharField(max_length=200)\n    created = models.DateTimeField(auto_now_add=True)\n    def __str__(self): return self.title\n\nPost.objects.filter(title__icontains="django")'],
+  'django.urls':['URL लाई view सँग जोड्छ। App को urls.py मा urlpatterns list बनाइन्छ, र include() ले project को urls मा जोडिन्छ।','path("route/", view, name="name")','urlpatterns = [\n    path("posts/", views.post_list, name="post-list"),\n    path("posts/<int:pk>/", views.post_detail, name="post-detail"),\n    path("api/", include("blog.urls")),\n]'],
+  'django.http':['Request र Response का objects। View ले HttpRequest पाउँछ र HttpResponse (वा subclass) फर्काउँछ।','def view(request: HttpRequest) -> HttpResponse','def hello(request):\n    name = request.GET.get("name", "world")\n    return HttpResponse(f"Hello {name}")'],
+  'django.shortcuts':['Common कामका लागि छोटा helper functions: render, redirect, get_object_or_404।','render(request, "template.html", context)','def post_detail(request, pk):\n    post = get_object_or_404(Post, pk=pk)\n    return render(request, "post.html", {"post": post})'],
+  'django.views':['View लेख्ने दुई तरिका: function-based र class-based। Generic views ले list/detail/create जस्ता सामान्य काम छिटो गर्छन्।','class MyView(View):\n    def get(self, request): ...','class PostList(ListView):\n    model = Post\n    template_name = "posts.html"\n    paginate_by = 10'],
+  'django.contrib.admin':['Built-in admin panel। Model register गरेपछि admin बाट data हेर्न, थप्न र edit गर्न मिल्छ। superuser बनाउन: python manage.py createsuperuser।','@admin.register(Model)\nclass MyAdmin(admin.ModelAdmin): ...','@admin.register(Post)\nclass PostAdmin(admin.ModelAdmin):\n    list_display = ["title", "created"]\n    search_fields = ["title"]'],
+  'django.conf':['settings.py का values code भित्र पढ्न settings object प्रयोग गरिन्छ। सिधै settings.py import नगर्नू।','from django.conf import settings','from django.conf import settings\nif settings.DEBUG:\n    print("dev mode")'],
+  'django.forms':['HTML form बनाउने र user input validate गर्ने। Form हातले, ModelForm model बाट बन्छ।','form = MyForm(request.POST)\nif form.is_valid(): form.cleaned_data','class ContactForm(forms.Form):\n    email = forms.EmailField()\n    msg = forms.CharField(widget=forms.Textarea)\n\nform = ContactForm(request.POST)\nif form.is_valid():\n    email = form.cleaned_data["email"]'],
+  'django.contrib.auth':['User model, login/logout र permissions/groups को system। @login_required ले view protect गर्छ।','user = authenticate(request, username=u, password=p)\nlogin(request, user)','user = authenticate(request, username="isak", password="***")\nif user:\n    login(request, user)\n    return redirect("home")'],
+  'django.core.validators':['Field को value मा rules लगाउने reusable validators। Model field वा form field को validators=[...] मा दिइन्छ।','field = Field(validators=[Validator(...)])','age = models.IntegerField(validators=[MinValueValidator(18)])'],
+  'django.core.paginator':['धेरै objects लाई page-page मा बाँड्छ। Page number request बाट लिइन्छ।','p = Paginator(queryset, per_page)\npage = p.get_page(number)','p = Paginator(Post.objects.all(), 10)\npage = p.get_page(request.GET.get("page"))'],
+  'django.utils':['Small helper tools। timezone ले time zone-aware datetime दिन्छ, slugify ले URL-friendly text बनाउँछ।','timezone.now()\nslugify(text)','from django.utils import timezone\nfrom django.utils.text import slugify\nslugify("My First Post")  # my-first-post'],
+  'django.contrib.messages':['अर्को page मा एकपटक देखाउने message (success/error)। Template मा {% for m in messages %} ले देखाइन्छ।','messages.success(request, "text")','messages.success(request, "Post saved!")\nreturn redirect("post-list")'],
+  'django.core.mail':['Email पठाउने। settings मा EMAIL_HOST, EMAIL_HOST_USER जस्ता values चाहिन्छ। Dev मा console backend प्रयोग गर्न सकिन्छ।','send_mail(subject, message, from_email, [to])','send_mail("Welcome", "Thanks for joining!",\n          "noreply@site.com", [user.email])'],
+  'django.db.models (adv)':['Complex query का लागि Q (OR/NOT), F (field सँग तुलना), Count/Sum/Avg (aggregate) र Prefetch प्रयोग हुन्छ।','Model.objects.filter(Q(a) | Q(b))\nModel.objects.annotate(n=Count("rel"))','Post.objects.filter(Q(title__icontains="a") | Q(body__icontains="a"))\nPost.objects.annotate(n=Count("comments"))\nPost.objects.update(views=F("views") + 1)'],
+  'django.db.transaction':['DB का धेरै काम सबै सफल भए मात्र save गर्छ, नत्र सबै rollback। Payment/stock जस्ता काममा चाहिन्छ।','with transaction.atomic():\n    ...','with transaction.atomic():\n    order = Order.objects.create(user=user)\n    Stock.objects.filter(id=1).update(qty=F("qty") - 1)'],
+  'django.dispatch':['Signals: कुनै event (जस्तै model save) भएपछि अर्को function आफैं चल्छ। apps.py को ready() मा import गर्नुपर्छ।','@receiver(post_save, sender=Model)\ndef handler(sender, instance, created, **kw): ...','@receiver(post_save, sender=User)\ndef create_profile(sender, instance, created, **kw):\n    if created:\n        Profile.objects.create(user=instance)'],
+  'django.middleware':['हरेक request/response बीच चल्ने layer। settings को MIDDLEWARE list मा क्रमैसँग चल्छ।','class MyMiddleware:\n    def __init__(self, get_response): ...\n    def __call__(self, request): ...','class TimingMiddleware:\n    def __init__(self, get_response):\n        self.get_response = get_response\n    def __call__(self, request):\n        response = self.get_response(request)\n        response["X-Seen"] = "1"\n        return response'],
+  'django.core.cache':['महँगो result साँचेर बारम्बार compute हुनबाट बचाउँछ। Settings को CACHES मा backend (locmem, redis) तोकिन्छ।','cache.set(key, value, timeout)\ncache.get(key)','data = cache.get("posts")\nif data is None:\n    data = list(Post.objects.values())\n    cache.set("posts", data, 60 * 5)'],
+  'django.core.management':['आफ्नै manage.py command बनाउने। management/commands/name.py मा BaseCommand subclass राखिन्छ।','class Command(BaseCommand):\n    def handle(self, *args, **opts): ...','# python manage.py clean_posts\nclass Command(BaseCommand):\n    def handle(self, *args, **opts):\n        n = Post.objects.filter(draft=True).delete()\n        self.stdout.write(f"deleted {n}")'],
+  'django.contrib.contenttypes':['कुनै पनि model सँग जोडिने generic relation (जस्तै Comment कुनै पनि model मा)। ContentType र object_id चाहिन्छ।','content_type = ForeignKey(ContentType)\nobject_id = PositiveIntegerField()\ntarget = GenericForeignKey()','class Comment(models.Model):\n    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)\n    object_id = models.PositiveIntegerField()\n    target = GenericForeignKey("content_type", "object_id")'],
+  'django.test':['Test लेख्ने tools। TestCase ले अस्थायी database बनाउँछ र Client ले browser जस्तै request पठाउँछ। python manage.py test चलाउनुहोस्।','class MyTest(TestCase):\n    def test_x(self): ...','class PostTest(TestCase):\n    def test_list(self):\n        res = self.client.get("/posts/")\n        self.assertEqual(res.status_code, 200)'],
+  'ASGI/WSGI, Celery, Channels':['Deploy र async: WSGI (sync, gunicorn), ASGI (async, uvicorn/daphne), Celery (background tasks), Channels (WebSocket)।','gunicorn project.wsgi\nuvicorn project.asgi:application\ncelery -A project worker','# tasks.py\n@shared_task\ndef send_welcome(user_id): ...\n\nsend_welcome.delay(user.id)'],
+  /* ---- Django children ---- */
+  'path':['URL route define गर्छ। <int:pk> जस्ता converters ले URL बाट value लिन्छ।','path(route, view, name="...")','path("posts/<int:pk>/", views.post_detail, name="post-detail")'],
+  'include':['अर्को urls.py का patterns यहाँ जोड्छ। App-wise URLs छुट्याउन उपयोगी।','include("app.urls")','path("blog/", include("blog.urls"))'],
+  'dj:reverse':['URL को name बाट URL string बनाउँछ। Template मा {% url %} ले यही काम गर्छ।','reverse("name", args=[...])','url = reverse("post-detail", args=[5])  # /posts/5/'],
+  'JsonResponse':['Dict लाई JSON response बनाएर फर्काउँछ। List फर्काउन safe=False चाहिन्छ।','JsonResponse(data, status=200)','return JsonResponse({"ok": True, "count": 3})'],
+  'render':['Template लाई context data सँग HTML बनाएर HttpResponse फर्काउँछ।','render(request, "app/page.html", context)','return render(request, "home.html", {"title": "Home"})'],
+  'get_object_or_404':['Object भेटिए फर्काउँछ, नभए 404 error दिन्छ। .get() को सुरक्षित रूप।','get_object_or_404(Model, pk=pk)','post = get_object_or_404(Post, pk=pk)'],
+  'ListView':['Model का objects को list देखाउने generic view। Template मा object_list प्रयोग हुन्छ।','class V(ListView):\n    model = Model\n    template_name = "x.html"','class PostList(ListView):\n    model = Post\n    paginate_by = 10'],
+  'ModelAdmin':['Admin मा model कस्तो देखिने भनेर customise गर्छ: columns, search, filters।','class MyAdmin(admin.ModelAdmin):\n    list_display = [...]','class PostAdmin(admin.ModelAdmin):\n    list_display = ["title", "created"]\n    list_filter = ["created"]'],
+  'ModelForm':['Model बाट form अटो बनाउँछ र form.save() ले सिधै database मा save गर्छ।','class F(forms.ModelForm):\n    class Meta:\n        model = Model\n        fields = [...]','form = PostForm(request.POST)\nif form.is_valid():\n    form.save()'],
+  'dj:authenticate':['Username/password जाँचेर User फर्काउँछ (नमिले None)। login() अघि प्रयोग हुन्छ।','authenticate(request, username=..., password=...)','user = authenticate(request, username=u, password=p)\nif user is not None:\n    login(request, user)'],
+  'MinValueValidator':['Number कम्तीमा दिइएको मान भन्दा बढी हुनुपर्छ।','MinValueValidator(limit_value)','price = models.DecimalField(max_digits=8, decimal_places=2,\n    validators=[MinValueValidator(0)])'],
+  'Q':['Filter मा OR (|), AND (&) र NOT (~) जस्ता complex condition बनाउँछ।','Q(a=1) | Q(b=2)','Post.objects.filter(Q(title__icontains="x") | ~Q(draft=True))'],
+  'F':['Python मा ननिकाली database भित्रै field को value प्रयोग गर्छ। Race condition रोक्छ।','F("field")','Post.objects.filter(id=1).update(views=F("views") + 1)'],
+  'receiver':['Signal लाई function सँग जोड्ने decorator।','@receiver(signal, sender=Model)','@receiver(post_save, sender=Order)\ndef on_order(sender, instance, created, **kw): ...'],
+  'cache_page':['पूरै view को response केही सेकेन्ड cache गर्छ।','@cache_page(seconds)','@cache_page(60 * 15)\ndef post_list(request): ...'],
+  'BaseCommand':['Custom management command को base class। handle() मा काम लेखिन्छ।','class Command(BaseCommand):\n    def handle(self, *args, **options): ...','self.stdout.write("done")'],
+  'Celery':['Background task queue। लामो काम (email, report) request बाहिर चलाउँछ। Redis/RabbitMQ broker चाहिन्छ।','@shared_task\ndef my_task(x): ...\nmy_task.delay(x)','send_welcome.delay(user.id)'],
   /* ---- Core ---- */
   'APIView':['Class-based view को base class। HTTP method अनुसार get(), post(), put(), delete() जस्ता methods लेखिन्छ।','class MyView(APIView):\n    def get(self, request): ...','class HelloView(APIView):\n    def get(self, request):\n        return Response({"msg": "Hello"})'],
   'Response':['Data लाई client लाई JSON आदि format मा पठाउँछ। चाहिए status code पनि दिन सकिन्छ।','Response(data, status=200)','return Response({"ok": True}, status=status.HTTP_201_CREATED)'],
@@ -440,9 +483,9 @@ body {
   'exception_handler':['सबै API errors को format एउटै बनाउन custom handler लेखिन्छ, अनि settings मा दिइन्छ।','def custom_handler(exc, context):\n    response = exception_handler(exc, context)','def custom_handler(exc, context):\n    response = exception_handler(exc, context)\n    if response:\n        response.data = {"success": False, "errors": response.data}\n    return response\n# "EXCEPTION_HANDLER": "app.utils.custom_handler"'],
   'authenticate':['Custom authentication मा request बाट user चिन्ने method। (user, auth) फर्काउनुपर्छ, नत्र None।','def authenticate(self, request):\n    return (user, None)','class ApiKeyAuth(BaseAuthentication):\n    def authenticate(self, request):\n        key = request.headers.get("X-API-KEY")\n        if not key: return None\n        return (User.objects.get(api_key=key), None)']
   };
-  function norm(t){ return t.replace(/^[^\w@]+/,'').replace(/\(\)$/,'').trim(); }
+  function norm(t){ return t.replace(/^\d+\s+[^\w@]*/,'').replace(/^[^\w@]+/,'').replace(/\(\)$/,'').trim(); }
   function render(box){
-    var key = norm(box.textContent), d = D[key];
+    var key = norm(box.textContent), pn = box.closest('.panel'), dj = pn && parseInt(pn.id.slice(1),10) < 3, d = (dj && D['dj:'+key]) || D[key];
     if (!d) { return esc(box.getAttribute('data-tooltip')); }
     return '<div class="t-h">'+esc(key)+'</div><p>'+esc(d[0])+'</p>'
       +'<div class="t-l">Syntax</div><pre>'+esc(d[1])+'</pre>'
@@ -474,8 +517,40 @@ body {
 <script>
 (function () {
   var P = [
-  { tab:'1–10 · Core', root:'rest_framework', rootTip:'' },
-  { tab:'11–20 · Auth & Utilities', root:'rest_framework', rootTip:'Main DRF package: the next 10 modules cover authentication, pagination, filtering, throttling, parsing and more.',
+  { tab:'Django · Basic 1–7', root:'django · BASIC', rootTip:'Django को basic modules: models, urls, http, shortcuts, views, admin र settings।',
+    mods:[
+    [1,'🗄️','django.db.models','Database tables define गर्ने ORM layer।',['Model|Base class for every database table.','Field types|CharField, IntegerField, ForeignKey, DateTimeField...','Meta|Inner class for ordering, verbose_name, indexes.','Manager|objects: the query interface (all, filter, get).']],
+    [2,'🧭','django.urls','URL लाई view सँग जोड्ने।',['path|Simple URL pattern.','re_path|URL pattern using regex.','include|Pull in another app\'s urls.py.','reverse|Build a URL from its name.']],
+    [3,'🌐','django.http','Request र response objects।',['HttpRequest|Incoming request object.','HttpResponse|Basic response (HTML/text).','JsonResponse|Response that returns JSON.','Http404|Exception that shows a 404 page.']],
+    [4,'⚡','django.shortcuts','Common काम छोटो बनाउने helper functions।',['render|Render a template with context.','redirect|Send the user to another URL.','get_object_or_404|Get object or raise 404.']],
+    [5,'👁️','django.views','View बनाउने classes।',['View|Base class-based view.','ListView|Shows a list of objects.','DetailView|Shows one object.','... more generic|CreateView, UpdateView, DeleteView, TemplateView.']],
+    [6,'🛠️','django.contrib.admin','Built-in admin panel।',['ModelAdmin|Customise how a model looks in admin.','register|Add a model to the admin site.']],
+    [7,'⚙️','django.conf','Project settings access।',['settings|Read values from settings.py.']]
+  ]},
+  { tab:'Django · Intermediate 8–14', root:'django · INTERMEDIATE', rootTip:'Forms, auth, validators, pagination, utils, messages र email।',
+    mods:[
+    [8,'📝','django.forms','HTML forms र validation।',['Form|Hand-written form fields.','ModelForm|Form generated from a model.']],
+    [9,'👤','django.contrib.auth','User, login र permissions।',['User|Built-in user model.','authenticate|Check username + password.','login|Start a session for the user.','logout|End the session.','Permission|Single action right on a model.','Group|Set of permissions given to users.']],
+    [10,'🧪','django.core.validators','Model/form field validation rules।',['MinValueValidator|Number must be at least a minimum.','RegexValidator|Value must match a regex.']],
+    [11,'📄','django.core.paginator','List लाई pages मा बाँड्ने।',['Paginator|Split a list or queryset into pages.']],
+    [12,'🧰','django.utils','Useful helpers।',['timezone|Timezone-aware now() and dates.','text.slugify|"Hello World" to "hello-world".']],
+    [13,'💬','django.contrib.messages','User लाई one-time message देखाउने।',['messages.success / error|Add a flash message.']],
+    [14,'✉️','django.core.mail','Email पठाउने।',['send_mail|Send a simple email.']]
+  ]},
+  { tab:'Django · Advanced 15–23', root:'django · ADVANCED', rootTip:'Advanced ORM, transactions, signals, middleware, cache, commands, tests र deployment।',
+    mods:[
+    [15,'🧮','django.db.models (adv)','Advanced queries र aggregation।',['Q|OR / NOT conditions in filters.','F|Refer to a field value inside the database.','Count|Count rows.','Sum|Add up values.','Avg|Average of values.','Prefetch|Control prefetch_related queries.']],
+    [16,'🔒','django.db.transaction','Atomic database changes।',['atomic|All-or-nothing block of DB work.']],
+    [17,'📡','django.dispatch','Signals: event हुँदा function चलाउने।',['post_save|Fires after a model is saved.','pre_save|Fires before a model is saved.','receiver|Decorator that connects a function to a signal.']],
+    [18,'🧅','django.middleware','Request/response बीचको layer।',['MIDDLEWARE|List in settings.py, runs in order.','custom middleware|Your own class that wraps every request.']],
+    [19,'⚡','django.core.cache','Result cache गरेर speed बढाउने।',['cache|Low-level get/set API.','cache_page|Cache a whole view response.']],
+    [20,'🖥️','django.core.management','Custom manage.py commands।',['BaseCommand|Base class for your own command.']],
+    [21,'🧬','django.contrib.contenttypes','कुनै पनि model सँग generic relation।',['GenericForeignKey|Point to any model with one field.']],
+    [22,'🧪','django.test','Testing tools।',['TestCase|Test class with a temporary database.','Client|Fake browser to call your views.']],
+    [23,'🚢','ASGI/WSGI, Celery, Channels','Deploy र async: server interface, background tasks, websockets।',['WSGI|Standard sync server interface (gunicorn).','ASGI|Async server interface (uvicorn, daphne).','Celery|Background task queue.|accent-blue','Channels|WebSockets and async protocols.|accent-blue']]
+  ]},
+  { tab:'DRF · 1–10 Core', root:'rest_framework', rootTip:'' },
+  { tab:'DRF · 11–20 Auth & Utilities', root:'rest_framework', rootTip:'Main DRF package: the next 10 modules cover authentication, pagination, filtering, throttling, parsing and more.',
     mods:[
     [11,'🔐','authentication','Identifies who is making the request.',['BasicAuthentication|HTTP Basic: username/password in the header. Testing only.','SessionAuthentication|Uses the Django session cookie. Good for browser clients.','TokenAuthentication|Reads the "Authorization: Token <key>" header.']],
     [12,'🎟️','authtoken','Ready-made token auth app (add to INSTALLED_APPS).',['Token|Model that stores one token per user.','obtain_auth_token|View: POST username + password, get the token back.']],
@@ -488,7 +563,7 @@ body {
     [19,'🧱','mixins','Single CRUD actions, combined with GenericAPIView.',['ListModelMixin|.list(): list objects.','CreateModelMixin|.create(): create an object.','RetrieveModelMixin|.retrieve(): get one object.','UpdateModelMixin|.update(): update an object.','DestroyModelMixin|.destroy(): delete an object.']],
     [20,'🔗','reverse','Build URLs from view names.',['reverse()|Returns the full URL for a named route; supports API versioning.']]
   ]},
-  { tab:'21–30 · Advanced', root:'rest_framework', rootTip:'Main DRF package: fields, relations, validation, settings, versioning, schemas and testing.',
+  { tab:'DRF · 21–30 Advanced', root:'rest_framework', rootTip:'Main DRF package: fields, relations, validation, settings, versioning, schemas and testing.',
     mods:[
     [21,'🧾','fields','Field types used inside serializers.',['CharField|Text input.','IntegerField|Whole numbers.','DecimalField|Exact decimals, e.g. prices.','ImageField|Image upload (needs Pillow).','ChoiceField|Value must be one of the given choices.','ListField|A list of values.','SerializerMethodField|Read-only field computed by a get_<name> method.','... more|Many other fields exist: DateField, BooleanField, FileField, etc.']],
     [22,'🔗','relations','How a serializer represents related objects.',['PrimaryKeyRelatedField|Shows the related object\'s id.','StringRelatedField|Shows its __str__ output.','SlugRelatedField|Shows a chosen unique field.','HyperlinkedRelatedField|Shows a URL to the related object.']],
@@ -501,7 +576,7 @@ body {
     [29,'🧰','utils','Internal helper modules.',['model_meta|Reads model field/relation info.','encoders.JSONEncoder|Encodes datetime, Decimal, UUID to JSON.','serializer_helpers|ReturnDict, ReturnList and similar.']],
     [30,'ℹ️','metadata','Describes the API for OPTIONS requests.',['SimpleMetadata|Default metadata class.','OPTIONS request|Returns allowed methods and field info.']]
   ]},
-  { tab:'31–40 · Extras & Packages', root:'DRF + बाहिरी Packages', rootTip:'DRF extras plus popular external packages: JWT, django-filter, CORS.',
+  { tab:'DRF · 31–40 Extras & Packages', root:'DRF + बाहिरी Packages', rootTip:'DRF extras plus popular external packages: JWT, django-filter, CORS.',
     mods:[
     [31,'📚','serializers.ListSerializer','Serializer that handles many objects.',['many=True|Serialize or validate a list of objects.','bulk create/update|Override create()/update() on ListSerializer.']],
     [32,'🧩','Serializer Meta options','Options inside class Meta of ModelSerializer.',['model|The model to serialize.','fields|Fields to include.','exclude|Fields to leave out.','read_only_fields|Fields that cannot be written.','extra_kwargs|Per-field options without redeclaring.','depth|How deep to nest related objects.']],
@@ -514,7 +589,7 @@ body {
     [39,'🧲','django_filters','Third-party field-level filtering.',['DjangoFilterBackend|Filter backend for ?field=value filters.|accent-blue','FilterSet|Define the filters for a model.|accent-blue']],
     [40,'🌐','corsheaders','Third-party: lets a React frontend call your API.',['CorsMiddleware|Add to MIDDLEWARE, high in the list.|accent-blue','CORS_ALLOWED_ORIGINS|List of frontend origins allowed to call the API.|accent-blue']]
   ]},
-  { tab:'41–50 · Production', root:'Production-level DRF', rootTip:'Patterns and packages used in real production DRF projects.',
+  { tab:'DRF · 41–50 Production', root:'Production-level DRF', rootTip:'Patterns and packages used in real production DRF projects.',
     mods:[
     [41,'🔄','to_representation / to_internal_value','Hooks to customise a serializer\'s output and input.',['Serializer को output/input बदल्ने|to_representation changes output; to_internal_value changes incoming data.']],
     [42,'🪆','Nested Serializer','Serializer inside a serializer.',['create() / update() override|Nested writes are not automatic: handle them yourself.']],
@@ -548,7 +623,7 @@ body {
   }
 
   var tabs=document.getElementById('tabs'), extra=document.getElementById('extra'), html='';
-  for(var i=1;i<P.length;i++) html+=build(i);
+  for(var i=0;i<P.length;i++) if(i!==3) html+=build(i);
   extra.innerHTML=html;
   P.forEach(function(d,i){
     var b=document.createElement('button');
@@ -563,6 +638,8 @@ body {
     });
     document.getElementById('tip').style.opacity='0';
     document.querySelector('.canvas').scrollLeft=0;
+    var c=document.querySelectorAll('#p'+n+' .module').length;
+    document.querySelector('.scroll-hint').textContent='← Scroll horizontally to see all '+c+' modules →';
     history.replaceState(null,'','#'+(n+1));
   }
   var start=parseInt((location.hash||'#1').slice(1),10)-1;
