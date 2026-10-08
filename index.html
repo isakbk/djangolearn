@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>rest_framework · Hierarchy Tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --line: #e63946;
+  --mod-w: 152px;     /* width of each module column */
+  --mod-gap: 16px;    /* space between module columns */
+  --v-gap: 20px;      /* vertical space between boxes */
+}
+
+body {
+  background: #f4f8fb;
+  background-image:
+    linear-gradient(rgba(200,220,235,.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,220,235,.35) 1px, transparent 1px);
+  background-size: 25px 25px;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.canvas {
+  background: #fff;
+  border-radius: 1.5rem;
+  padding: 2.5rem 2rem 3rem;
+  box-shadow: 0 20px 45px -15px rgba(0,40,70,.2), 0 4px 15px rgba(0,0,0,.04);
+  border: 1px solid #dbe8f2;
+  max-width: 1800px;
+  margin: auto;
+  overflow-x: auto;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0b2f44;
+}
+.title span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .75rem;
+  color: #4b7a9c;
+  background: #e3effa;
+  padding: .2rem .9rem;
+  border-radius: 30px;
+  border: 1px solid #b7d3ea;
+  margin-left: .5rem;
+}
+
+.system-bar {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  background: #f8fcff;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #d4e6f5;
+}
+.sys-badge {
+  background: #fff;
+  border: 1px solid #b8d2ea;
+  border-radius: 40px;
+  padding: .5rem 1.2rem;
+  font-size: .8rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: #1c4d6e;
+}
+.sys-badge .val { color: #0b2f44; font-weight: 600; }
+
+/* ============ TREE ============ */
+.tree {
+  width: max-content;      /* grows with the modules, so nothing is squeezed */
+  min-width: 100%;
+  margin: 0 auto;
+}
+.root-container { display: flex; flex-direction: column; align-items: center; }
+
+/* BOX */
+.box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: .4rem;
+  width: 100%;
+  min-height: 42px;
+  padding: .6rem .7rem;
+  border-radius: 10px;
+  border: 2px solid #0b2f44;
+  color: #fff;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  box-shadow: 0 6px 12px -6px rgba(0,40,70,.35);
+  position: relative;
+  cursor: help;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.box:hover { transform: translateY(-3px); box-shadow: 0 12px 18px -8px rgba(0,40,70,.4); }
+
+.root {
+  width: auto;
+  background: linear-gradient(135deg, #0d6e4f, #08523a);
+  border-color: #063d2b;
+  font-size: 1.1rem;
+  padding: .8rem 1.8rem;
+}
+.level1 { background: linear-gradient(135deg, #2a9d5c, #1f7a46); border-color: #155c34; font-size: .9rem; }
+.level2 { background: linear-gradient(135deg, #20a86b, #178a56); border-color: #0e633c; font-size: .8rem; font-weight: 500; }
+.level3 { background: linear-gradient(135deg, #2fb87a, #239a64); border-color: #167a4d; font-size: .76rem; }
+.accent { background: linear-gradient(135deg, #e8a020, #c9820e); border-color: #9c6508; }
+.accent-blue { background: linear-gradient(135deg, #2b7bb9, #1d5e91); border-color: #14456b; }
+
+/* stem from root down to the horizontal bar */
+.stem { width: 3px; height: 32px; background: var(--line); }
+
+/* ============ MODULES (one row) ============ */
+.modules {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--mod-gap);
+}
+
+.module {
+  width: var(--mod-w);
+  flex: 0 0 var(--mod-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding-top: 32px;               /* room for connector */
+}
+/* vertical drop from the bar to each module */
+.module::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  width: 3px; height: 32px;
+  margin-left: -1.5px;
+  background: var(--line);
+}
+/* horizontal bar segment; extends across the gap so the bar is continuous */
+.module::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(var(--mod-gap) / -2);
+  right: calc(var(--mod-gap) / -2);
+  height: 3px;
+  background: var(--line);
+}
+.module:first-child::after { left: 50%; }
+.module:last-child::after  { right: 50%; }
+
+.module-content,
+.child {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: var(--v-gap);
+}
+.module-content { margin-top: var(--v-gap); }
+
+/* short connector above every child box */
+.child > .box::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--v-gap) * -1 - 2px);
+  left: 50%;
+  width: 3px;
+  height: var(--v-gap);
+  margin-left: -1.5px;
+  background: var(--line);
+}
+.child > .box:hover::before { top: calc(var(--v-gap) * -1 - 2px); }
+
+.child > small {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .68rem;
+  color: #4b7a9c;
+  text-align: center;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.scroll-hint {
+  text-align: center;
+  font-size: .75rem;
+  color: #7a9bb5;
+  margin-top: 2rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+
+/* ============ TABS ============ */
+.tabs { display:flex; justify-content:center; flex-wrap:wrap; gap:.6rem; margin-bottom:1.75rem; }
+.tab {
+  font: 600 .8rem 'JetBrains Mono', monospace;
+  padding: .55rem 1.1rem; border-radius: 40px;
+  border: 1px solid #b8d2ea; background: #fff; color: #1c4d6e; cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.tab:hover { background: #e3effa; }
+.tab[aria-selected="true"] { background: #0d6e4f; border-color: #063d2b; color: #fff; }
+.tab:focus-visible { outline: 3px solid #2b7bb9; outline-offset: 2px; }
+.panel[hidden] { display: none; }
+.n {
+  font-family: 'JetBrains Mono', monospace; font-size: .68rem; font-weight: 600;
+  background: rgba(255,255,255,.22); border-radius: 6px; padding: .05rem .4rem; margin-right: .2rem;
+}
+
+/* ============ TOOLTIP (JS positioned, never clipped) ============ */
+#tip {
+  position: fixed;
+  z-index: 9999;
+  width: max-content;
+  max-width: min(400px, 92vw);
+  background: #0b2f44;
+  color: #f0f7ff;
+  font-size: .75rem;
+  line-height: 1.55;
+  padding: .6rem .9rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,30,50,.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .1s ease;
+}
+
+#tip .t-h { font-family:'JetBrains Mono',monospace; font-weight:600; font-size:.78rem; color:#7fd6a8; margin-bottom:.35rem; }
+#tip p { margin:0 0 .2rem; }
+#tip .t-l { font-family:'JetBrains Mono',monospace; font-size:.66rem; color:#8fb8d4; margin:.55rem 0 .2rem; }
+#tip pre {
+  font-family:'JetBrains Mono',monospace; font-size:.7rem; line-height:1.5;
+  background:#061a27; color:#e8f3fb; border:1px solid #1d4a66; border-radius:6px;
+  padding:.45rem .6rem; white-space:pre-wrap; overflow-wrap:anywhere;
+}
+</style>
+</head>
+
+<body>
+<div class="canvas">
+
+  <div class="title">rest_framework <span>hierarchy tree · 50 topics</span></div>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+
+  <section class="panel" id="p0">
+  <div class="system-bar">
+    <div class="sys-badge">System: <span class="val">Django REST Framework</span></div>
+    <div class="sys-badge">Parameters: <span class="val">request · response · status · format</span></div>
+    <div class="sys-badge">Settings: <span class="val">REST_FRAMEWORK</span></div>
+  </div>
+
+  <div class="tree">
+    <div class="root-container">
+
+      <div class="box root" data-tooltip="Django REST Framework को मुख्य root package हो। API बनाउन आवश्यक धेरै tools यही package भित्र हुन्छन्।">📦 rest_framework</div>
+      <div class="stem"></div>
+
+      <div class="modules">
+
+        <!-- 1. VIEWS -->
+        <div class="module">
+          <div class="box level1" data-tooltip="Views — API request handle गर्ने ठाउँ। Function-based वा class-based API view बनाउन प्रयोग हुन्छ।">👁️ views</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2" data-tooltip="APIView — custom API view बनाउन प्रयोग हुने base class। get(), post(), put(), delete() आदि methods define गर्न सकिन्छ।">🧩 APIView</div>
+          </div></div>
+        </div>
+
+        <!-- 2. RESPONSE -->
+        <div class="module">
+          <div class="box level1" data-tooltip="Response — API बाट client लाई data पठाउन प्रयोग हुन्छ।">↩️ response</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2" data-tooltip="Response — serialized data लाई HTTP response को रूपमा return गर्छ।">💬 Response</div>
+          </div></div>
+        </div>
+
+        <!-- 3. REQUEST -->
+        <div class="module">
+          <div class="box level1" data-tooltip="Request — Django request भन्दा DRF को enhanced request object हो।">✉️ request</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2" data-tooltip="Request object मा request.data, request.query_params, request.user, request.method जस्ता useful properties हुन्छन्।">🧩 Request</div>
+            <small>.data · .query_params · .user</small>
+          </div></div>
+        </div>
+
+        <!-- 4. STATUS -->
+        <div class="module">
+          <div class="box level1" data-tooltip="status — HTTP status code का readable constants प्रदान गर्छ।">📶 status</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2 accent-blue" data-tooltip="HTTP 200 OK — request successfully completed।">HTTP_200_OK</div>
+            <div class="box level2 accent-blue" data-tooltip="HTTP 201 CREATED — नयाँ resource successfully create भयो।">HTTP_201_<wbr>CREATED</div>
+            <div class="box level2 accent-blue" data-tooltip="HTTP 400 BAD REQUEST — client को request/data invalid छ।">HTTP_400_<wbr>BAD_REQUEST</div>
+          </div></div>
+        </div>
+
+        <!-- 5. DECORATORS -->
+        <div class="module">
+          <div class="box level1" data-tooltip="decorators — function-based API views मा DRF behavior थप्न प्रयोग हुन्छ।">🏷️ decorators</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2" data-tooltip="@api_view — normal Django function लाई DRF API view बनाउँछ।">@api_view</div>
+            <div class="box level2" data-tooltip="@permission_classes — view मा permission classes configure गर्छ।">@permission_<wbr>classes</div>
+          </div></div>
+        </div>
+
+        <!-- 6. SERIALIZERS -->
+        <div class="module">
+          <div class="box level1" data-tooltip="serializers — Python/model objects र JSON data बीच conversion र validation गर्छ।">🔄 serializers</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2" data-tooltip="Serializer — fields manually define गरेर serialization/validation गर्न सकिन्छ।">⚙️ Serializer</div>
+            <div class="box level2" data-tooltip="ModelSerializer — Django model बाट fields automatically generate गर्छ।">📋 Model<wbr>Serializer</div>
+          </div></div>
+        </div>
+
+        <!-- 7. GENERICS -->
+        <div class="module">
+          <div class="box level1" data-tooltip="generics — common CRUD operations का लागि ready-made generic API views।">📚 generics</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2" data-tooltip="GenericAPIView — generic views को base class। queryset र serializer_class configure गर्न सकिन्छ।">Generic<wbr>APIView</div>
+            <div class="box level3 accent" data-tooltip="ListAPIView — GET द्वारा objects को list देखाउन प्रयोग हुन्छ।">ListAPIView</div>
+            <div class="box level3 accent" data-tooltip="CreateAPIView — POST द्वारा नयाँ object create गर्न प्रयोग हुन्छ।">CreateAPIView</div>
+            <div class="box level3" data-tooltip="ListCreateAPIView — GET list र POST create दुवै।">ListCreate<wbr>APIView</div>
+            <div class="box level3 accent" data-tooltip="RetrieveUpdateDestroyAPIView — GET, PUT/PATCH र DELETE एउटै object मा।">Retrieve<wbr>Update<wbr>Destroy<wbr>APIView</div>
+          </div></div>
+        </div>
+
+        <!-- 8. VIEWSETS -->
+        <div class="module">
+          <div class="box level1" data-tooltip="viewsets — related CRUD operations लाई एउटै class मा group गर्छ।">🧊 viewsets</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2" data-tooltip="ViewSet — list, create, retrieve, update, destroy जस्ता actions define गर्न सकिन्छ।">ViewSet</div>
+            <div class="box level2" data-tooltip="ModelViewSet — Django model का लागि complete CRUD प्रदान गर्छ।">ModelViewSet</div>
+            <div class="box level2" data-tooltip="ReadOnlyModelViewSet — list र retrieve मात्र।">ReadOnly<wbr>ModelViewSet</div>
+          </div></div>
+        </div>
+
+        <!-- 9. ROUTERS -->
+        <div class="module">
+          <div class="box level1" data-tooltip="routers — ViewSet का लागि URL patterns automatically generate गर्छ।">🛣️ routers</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2" data-tooltip="DefaultRouter — ViewSet URLs र browsable API root समेत provide गर्छ।">DefaultRouter</div>
+            <div class="box level2" data-tooltip="SimpleRouter — basic ViewSet URL routing।">SimpleRouter</div>
+          </div></div>
+        </div>
+
+        <!-- 10. PERMISSIONS -->
+        <div class="module">
+          <div class="box level1" data-tooltip="permissions — कुन user ले API access गर्न पाउने भनेर control गर्छ।">🛡️ permissions</div>
+          <div class="module-content"><div class="child">
+            <div class="box level2" data-tooltip="IsAuthenticated — login गरेको user लाई मात्र access।">IsAuthenticated</div>
+            <div class="box level2" data-tooltip="AllowAny — सबैलाई access।">AllowAny</div>
+            <div class="box level2" data-tooltip="IsAdminUser — admin/staff user लाई access।">IsAdminUser</div>
+            <div class="box level2" data-tooltip="BasePermission — custom permission बनाउन base class।">Base<wbr>Permission</div>
+          </div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</section>
+<div id="extra"></div>
+
+  <div class="scroll-hint">← Scroll horizontally to see all 10 modules →</div>
+</div>
+
+<div id="tip"></div>
+
+<script>
+(function () {
+  var tip = document.getElementById('tip');
+
+  var D = {
+  /* ---- Core ---- */
+  'APIView':['Class-based view को base class। HTTP method अनुसार get(), post(), put(), delete() जस्ता methods लेखिन्छ।','class MyView(APIView):\n    def get(self, request): ...','class HelloView(APIView):\n    def get(self, request):\n        return Response({"msg": "Hello"})'],
+  'Response':['Data लाई client लाई JSON आदि format मा पठाउँछ। चाहिए status code पनि दिन सकिन्छ।','Response(data, status=200)','return Response({"ok": True}, status=status.HTTP_201_CREATED)'],
+  'Request':['DRF को Request object ले parsed body, query params र user जस्ता information दिन्छ।','request.data  request.query_params  request.user','title = request.data.get("title")\npage = request.query_params.get("page")'],
+  'HTTP_200_OK':['Request सफल भयो भनेर बताउने status code। GET र update पछि सामान्य रूपमा प्रयोग हुन्छ।','status.HTTP_200_OK','return Response(data, status=status.HTTP_200_OK)'],
+  'HTTP_201_CREATED':['नयाँ resource सफलतापूर्वक create भएपछि फर्काइने status।','status.HTTP_201_CREATED','return Response(serializer.data, status=status.HTTP_201_CREATED)'],
+  'HTTP_400_BAD_REQUEST':['Client ले पठाएको data invalid हुँदा फर्काइने status।','status.HTTP_400_BAD_REQUEST','return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)'],
+  '@api_view':['Function-based view लाई DRF API view बनाउँछ। Allowed HTTP methods को list दिनुपर्छ।','@api_view(["GET", "POST"])\ndef my_view(request): ...','@api_view(["GET"])\ndef ping(request):\n    return Response({"pong": True})'],
+  '@permission_classes':['Function-based view मा कुन permission लाग्ने भनेर तोक्छ। @api_view को मुनि राखिन्छ।','@permission_classes([PermissionClass])','@api_view(["GET"])\n@permission_classes([IsAuthenticated])\ndef me(request):\n    return Response({"user": request.user.username})'],
+  'Serializer':['Fields हातले define गरेर Python object ↔ JSON convert र validate गर्छ।','class MySerializer(serializers.Serializer):\n    field = serializers.CharField()','class UserSer(serializers.Serializer):\n    name = serializers.CharField(max_length=50)\n    age = serializers.IntegerField()'],
+  'ModelSerializer':['Django model बाट fields र validators automatically बनाउँछ। create() र update() पनि बनेकै हुन्छ।','class MySerializer(serializers.ModelSerializer):\n    class Meta:\n        model = Model\n        fields = [...]','class PostSer(serializers.ModelSerializer):\n    class Meta:\n        model = Post\n        fields = ["id", "title", "body"]'],
+  'ListAPIView':['GET request मा objects को list फर्काउँछ। queryset र serializer_class चाहिन्छ।','class V(ListAPIView):\n    queryset = ...\n    serializer_class = ...','class PostList(ListAPIView):\n    queryset = Post.objects.all()\n    serializer_class = PostSer'],
+  'ListCreateAPIView':['एउटै view मा GET (list) र POST (create) दुवै गर्छ।','class V(ListCreateAPIView):\n    queryset = ...\n    serializer_class = ...','class PostListCreate(ListCreateAPIView):\n    queryset = Post.objects.all()\n    serializer_class = PostSer'],
+  'RetrieveUpdateDestroyAPIView':['एउटै object मा GET (retrieve), PUT/PATCH (update) र DELETE गर्छ। URL मा pk चाहिन्छ।','class V(RetrieveUpdateDestroyAPIView): ...','class PostDetail(RetrieveUpdateDestroyAPIView):\n    queryset = Post.objects.all()\n    serializer_class = PostSer\n# path("posts/<int:pk>/", PostDetail.as_view())'],
+  'ViewSet':['Actions (list, create, retrieve...) हातले लेखिने class। get/post को सट्टा action नाम प्रयोग हुन्छ।','class MyViewSet(viewsets.ViewSet):\n    def list(self, request): ...','class PostViewSet(viewsets.ViewSet):\n    def list(self, request):\n        return Response(["a", "b"])'],
+  'ModelViewSet':['एउटा model को पूरा CRUD (list, create, retrieve, update, destroy) एउटै class मा दिन्छ।','class MyViewSet(viewsets.ModelViewSet):\n    queryset = ...\n    serializer_class = ...','class PostViewSet(viewsets.ModelViewSet):\n    queryset = Post.objects.all()\n    serializer_class = PostSer'],
+  'DefaultRouter':['ViewSet का लागि URLs automatically बनाउँछ, र API root page पनि दिन्छ।','router = DefaultRouter()\nrouter.register(prefix, ViewSet)','router = DefaultRouter()\nrouter.register("posts", PostViewSet)\nurlpatterns = router.urls'],
+  'IsAuthenticated':['Login गरेको user लाई मात्र access दिन्छ; नत्र 401/403 आउँछ।','permission_classes = [IsAuthenticated]','class MyView(APIView):\n    permission_classes = [IsAuthenticated]'],
+  'BasePermission':['Custom permission बनाउन base class। has_permission() वा has_object_permission() override गर्नुपर्छ।','class MyPerm(BasePermission):\n    def has_permission(self, request, view):\n        return True/False','class IsOwner(BasePermission):\n    def has_object_permission(self, request, view, obj):\n        return obj.owner == request.user'],
+  /* ---- 11-20 ---- */
+  'TokenAuthentication':['Header मा token पठाएर user चिन्ने तरिका। settings मा authentication class थप्नुपर्छ र rest_framework.authtoken INSTALLED_APPS मा चाहिन्छ।','Authorization: Token <key>','REST_FRAMEWORK = {\n  "DEFAULT_AUTHENTICATION_CLASSES": [\n    "rest_framework.authentication.TokenAuthentication"]}'],
+  'SessionAuthentication':['Django को session cookie प्रयोग गर्छ। Browser/React same-site मा उपयुक्त; unsafe methods मा CSRF token चाहिन्छ।','authentication_classes = [SessionAuthentication]','class MyView(APIView):\n    authentication_classes = [SessionAuthentication]'],
+  'obtain_auth_token':['Username र password POST गरेपछि Token फर्काउने ready-made view।','path("login/", obtain_auth_token)','# POST /login/  {"username": "isak", "password": "***"}\n# -> {"token": "9944b09199c6..."}'],
+  'PageNumberPagination':['List लाई page-page मा बाँड्छ। ?page=2 जस्तै प्रयोग हुन्छ।','class P(PageNumberPagination):\n    page_size = 10','REST_FRAMEWORK = {\n  "DEFAULT_PAGINATION_CLASS":\n    "rest_framework.pagination.PageNumberPagination",\n  "PAGE_SIZE": 10}'],
+  'SearchFilter':['?search=word ले search_fields मा खोज्छ।','filter_backends = [SearchFilter]\nsearch_fields = ["field"]','class PostList(ListAPIView):\n    filter_backends = [SearchFilter]\n    search_fields = ["title", "body"]\n# GET /posts/?search=django'],
+  'OrderingFilter':['?ordering=field ले sort गर्छ; अगाडि - लगाए descending हुन्छ।','filter_backends = [OrderingFilter]\nordering_fields = ["field"]','ordering_fields = ["created_at", "title"]\n# GET /posts/?ordering=-created_at'],
+  'UserRateThrottle':['Login गरेको user ले कति पटक request गर्न पाउने भनेर limit गर्छ। Rate settings मा दिइन्छ।','"DEFAULT_THROTTLE_RATES": {"user": "100/day"}','REST_FRAMEWORK = {\n  "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.UserRateThrottle"],\n  "DEFAULT_THROTTLE_RATES": {"user": "100/day"}}'],
+  'ValidationError':['Data invalid हुँदा 400 error फाल्छ। Serializer को validate method मा धेरै प्रयोग हुन्छ।','raise serializers.ValidationError("message")','def validate_age(self, value):\n    if value < 18:\n        raise serializers.ValidationError("Age must be 18+")\n    return value'],
+  'reverse':['View को नामबाट पूरा URL बनाउँछ। Hard-coded URL नराखी maintain गर्न सजिलो हुन्छ।','reverse("view-name", request=request)','url = reverse("post-detail", args=[1], request=request)'],
+  /* ---- 21-30 ---- */
+  'SerializerMethodField':['Read-only field जसको value get_<field_name>() method ले compute गर्छ।','field = SerializerMethodField()\ndef get_field(self, obj): ...','full_name = serializers.SerializerMethodField()\ndef get_full_name(self, obj):\n    return f"{obj.first_name} {obj.last_name}"'],
+  'PrimaryKeyRelatedField':['Related object लाई उसको id (pk) ले देखाउँछ। Write गर्दा पनि id पठाइन्छ।','field = PrimaryKeyRelatedField(queryset=Model.objects.all())','author = serializers.PrimaryKeyRelatedField(\n    queryset=User.objects.all())\n# {"author": 3}'],
+  'UniqueValidator':['Field को value model भित्र unique छ कि छैन जाँच्छ।','UniqueValidator(queryset=Model.objects.all())','email = serializers.EmailField(\n    validators=[UniqueValidator(queryset=User.objects.all())])'],
+  'REST_FRAMEWORK = {...}':['settings.py मा DRF को global configuration राख्ने dictionary: authentication, permissions, pagination, throttling आदि।','REST_FRAMEWORK = {\n  "KEY": value }','REST_FRAMEWORK = {\n  "DEFAULT_PERMISSION_CLASSES": [\n    "rest_framework.permissions.IsAuthenticated"],\n  "PAGE_SIZE": 10}'],
+  'URLPathVersioning':['URL को path मा version राखेर API version गर्ने तरिका।','"DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning"','path("api/<version>/posts/", PostList.as_view())\n# GET /api/v1/posts/  -> request.version == "v1"'],
+  'APIClient':['Test मा API request पठाउने client। login पनि force_authenticate ले गर्न सकिन्छ।','client = APIClient()\nclient.get(url)  client.post(url, data, format="json")','class PostTests(APITestCase):\n    def test_list(self):\n        res = self.client.get("/api/posts/")\n        self.assertEqual(res.status_code, 200)'],
+  /* ---- 31-40 ---- */
+  'many=True':['धेरै objects (list) एकैपटक serialize वा validate गर्न serializer मा many=True दिइन्छ।','Serializer(queryset, many=True)','serializer = PostSer(Post.objects.all(), many=True)\nreturn Response(serializer.data)'],
+  'extra_kwargs':['Field फेरि declare नगरी ModelSerializer भित्रै option दिन मिल्छ, जस्तै write_only।','extra_kwargs = {"field": {"option": value}}','class Meta:\n    model = User\n    fields = ["username", "password"]\n    extra_kwargs = {"password": {"write_only": True}}'],
+  'read_only_fields':['यी fields पढ्न मात्र मिल्छ, request बाट बदल्न मिल्दैन।','read_only_fields = ["id", "created_at"]','class Meta:\n    model = Post\n    fields = "__all__"\n    read_only_fields = ["id", "created_at"]'],
+  '@action(detail, methods, url_path)':['ViewSet मा custom endpoint थप्छ। detail=True भए एक object को लागि (pk चाहिन्छ), False भए list को लागि।','@action(detail=True, methods=["post"], url_path="name")','@action(detail=True, methods=["post"], url_path="publish")\ndef publish(self, request, pk=None):\n    post = self.get_object()\n    post.published = True\n    post.save()\n    return Response({"status": "published"})'],
+  'get_serializer_class':['Action वा user अनुसार फरक serializer रोज्न यो method override गरिन्छ।','def get_serializer_class(self):\n    return SerializerClass','def get_serializer_class(self):\n    if self.action == "list":\n        return PostListSer\n    return PostDetailSer'],
+  'SimpleRateThrottle':['Custom throttle बनाउन base class। scope र get_cache_key() define गर्नुपर्छ।','class T(SimpleRateThrottle):\n    scope = "name"\n    def get_cache_key(self, request, view): ...','class LoginThrottle(SimpleRateThrottle):\n    scope = "login"\n    def get_cache_key(self, request, view):\n        return self.get_ident(request)'],
+  'TokenObtainPairView':['simplejwt को login view। Username/password पठाउँदा access र refresh token दिन्छ।','path("api/token/", TokenObtainPairView.as_view())','# POST /api/token/ {"username": "...", "password": "..."}\n# -> {"refresh": "...", "access": "..."}'],
+  'DjangoFilterBackend':['Field अनुसार exact filter गर्छ, जस्तै ?category=1। django-filter install गर्नुपर्छ।','filter_backends = [DjangoFilterBackend]\nfilterset_fields = ["field"]','class PostList(ListAPIView):\n    filter_backends = [DjangoFilterBackend]\n    filterset_fields = ["category", "published"]'],
+  'CORS_ALLOWED_ORIGINS':['React जस्तो अर्को origin बाट API call गर्न दिइने frontend URLs को list। settings.py मा राखिन्छ।','CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]','MIDDLEWARE = ["corsheaders.middleware.CorsMiddleware", ...]\nCORS_ALLOWED_ORIGINS = ["http://localhost:5173"]'],
+  /* ---- 41-50 ---- */
+  'create() / update() override':['Nested serializer मा nested data आफैं save हुँदैन, त्यसैले create() वा update() मा हातले लेख्नुपर्छ।','def create(self, validated_data):\n    nested = validated_data.pop("nested")\n    ...','def create(self, validated_data):\n    items = validated_data.pop("items")\n    order = Order.objects.create(**validated_data)\n    for i in items:\n        Item.objects.create(order=order, **i)\n    return order'],
+  'perform_create':['Object save हुनुअघि extra data थप्न view मा override गरिन्छ, जस्तै logged-in user।','def perform_create(self, serializer):\n    serializer.save(field=value)','def perform_create(self, serializer):\n    serializer.save(author=self.request.user)'],
+  'select_related':['ForeignKey/OneToOne को data JOIN ले एउटै query मा ल्याउँछ, N+1 problem रोक्छ।','Model.objects.select_related("fk_field")','posts = Post.objects.select_related("author")'],
+  'prefetch_related':['ManyToMany र reverse relation को data छुट्टै query बाट ल्याएर Python मा जोड्छ।','Model.objects.prefetch_related("m2m_field")','posts = Post.objects.prefetch_related("tags", "comments")'],
+  'atomic':['Block भित्रका सबै DB changes सफल भए मात्र save हुन्छ; error आए सबै rollback हुन्छ।','with transaction.atomic():\n    ...','with transaction.atomic():\n    order = Order.objects.create(user=user)\n    Stock.objects.filter(id=1).update(qty=F("qty") - 1)'],
+  'extend_schema':['drf-spectacular को decorator, जसले view को Swagger docs (request/response) वर्णन गर्छ।','@extend_schema(request=Ser, responses=Ser)','@extend_schema(responses=PostSer(many=True))\ndef list(self, request):\n    ...'],
+  'exception_handler':['सबै API errors को format एउटै बनाउन custom handler लेखिन्छ, अनि settings मा दिइन्छ।','def custom_handler(exc, context):\n    response = exception_handler(exc, context)','def custom_handler(exc, context):\n    response = exception_handler(exc, context)\n    if response:\n        response.data = {"success": False, "errors": response.data}\n    return response\n# "EXCEPTION_HANDLER": "app.utils.custom_handler"'],
+  'authenticate':['Custom authentication मा request बाट user चिन्ने method। (user, auth) फर्काउनुपर्छ, नत्र None।','def authenticate(self, request):\n    return (user, None)','class ApiKeyAuth(BaseAuthentication):\n    def authenticate(self, request):\n        key = request.headers.get("X-API-KEY")\n        if not key: return None\n        return (User.objects.get(api_key=key), None)']
+  };
+  function norm(t){ return t.replace(/^[^\w@]+/,'').replace(/\(\)$/,'').trim(); }
+  function render(box){
+    var key = norm(box.textContent), d = D[key];
+    if (!d) { return esc(box.getAttribute('data-tooltip')); }
+    return '<div class="t-h">'+esc(key)+'</div><p>'+esc(d[0])+'</p>'
+      +'<div class="t-l">Syntax</div><pre>'+esc(d[1])+'</pre>'
+      +'<div class="t-l">Example</div><pre>'+esc(d[2])+'</pre>';
+  }
+  function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function show(e) {
+    var box = e.target.closest('.box[data-tooltip]');
+    if (!box) return;
+    tip.innerHTML = render(box);
+    tip.style.opacity = '1';
+    var r = box.getBoundingClientRect();
+    var w = tip.offsetWidth, h = tip.offsetHeight, m = 8;
+    var left = Math.min(Math.max(m, r.left + r.width / 2 - w / 2), window.innerWidth - w - m);
+    var top = r.top - h - 10;
+    if (top < m) top = r.bottom + 10;          // flip below if no room above
+    if (top + h > window.innerHeight - m) top = Math.max(m, window.innerHeight - h - m);
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  }
+  function hide() { tip.style.opacity = '0'; }
+  document.addEventListener('mouseover', show);
+  document.addEventListener('mouseout', function (e) {
+    if (e.target.closest('.box[data-tooltip]')) hide();
+  });
+  document.addEventListener('scroll', hide, true);
+})();
+</script>
+<script>
+(function () {
+  var P = [
+  { tab:'1–10 · Core', root:'rest_framework', rootTip:'' },
+  { tab:'11–20 · Auth & Utilities', root:'rest_framework', rootTip:'Main DRF package: the next 10 modules cover authentication, pagination, filtering, throttling, parsing and more.',
+    mods:[
+    [11,'🔐','authentication','Identifies who is making the request.',['BasicAuthentication|HTTP Basic: username/password in the header. Testing only.','SessionAuthentication|Uses the Django session cookie. Good for browser clients.','TokenAuthentication|Reads the "Authorization: Token <key>" header.']],
+    [12,'🎟️','authtoken','Ready-made token auth app (add to INSTALLED_APPS).',['Token|Model that stores one token per user.','obtain_auth_token|View: POST username + password, get the token back.']],
+    [13,'📄','pagination','Splits large lists into pages.',['PageNumberPagination|?page=2 style pages.','LimitOffsetPagination|?limit=10&offset=20 style.','CursorPagination|Opaque cursor; stable for large, fast-changing data.']],
+    [14,'🔎','filters','Built-in filter backends for list views.',['SearchFilter|?search=term across search_fields.','OrderingFilter|?ordering=price or ?ordering=-price.']],
+    [15,'⏱️','throttling','Rate-limits how often clients can call the API.',['AnonRateThrottle|Limits anonymous users, by IP.','UserRateThrottle|Limits logged-in users, per user.','ScopedRateThrottle|Different rates per view scope.']],
+    [16,'📥','parsers','Convert the request body into request.data.',['JSONParser|Parses application/json.','FormParser|Parses HTML form data.','MultiPartParser|Parses multipart data, e.g. file uploads.']],
+    [17,'📤','renderers','Convert response data into the output format.',['JSONRenderer|Renders the response as JSON.','BrowsableAPIRenderer|The HTML browsable API page.']],
+    [18,'⚠️','exceptions','Exceptions that DRF turns into proper HTTP error responses.',['APIException|Base class for all API errors.','ValidationError|400: invalid data.','NotFound|404: resource not found.','PermissionDenied|403: not allowed.','AuthenticationFailed|401: bad credentials or token.']],
+    [19,'🧱','mixins','Single CRUD actions, combined with GenericAPIView.',['ListModelMixin|.list(): list objects.','CreateModelMixin|.create(): create an object.','RetrieveModelMixin|.retrieve(): get one object.','UpdateModelMixin|.update(): update an object.','DestroyModelMixin|.destroy(): delete an object.']],
+    [20,'🔗','reverse','Build URLs from view names.',['reverse()|Returns the full URL for a named route; supports API versioning.']]
+  ]},
+  { tab:'21–30 · Advanced', root:'rest_framework', rootTip:'Main DRF package: fields, relations, validation, settings, versioning, schemas and testing.',
+    mods:[
+    [21,'🧾','fields','Field types used inside serializers.',['CharField|Text input.','IntegerField|Whole numbers.','DecimalField|Exact decimals, e.g. prices.','ImageField|Image upload (needs Pillow).','ChoiceField|Value must be one of the given choices.','ListField|A list of values.','SerializerMethodField|Read-only field computed by a get_<name> method.','... more|Many other fields exist: DateField, BooleanField, FileField, etc.']],
+    [22,'🔗','relations','How a serializer represents related objects.',['PrimaryKeyRelatedField|Shows the related object\'s id.','StringRelatedField|Shows its __str__ output.','SlugRelatedField|Shows a chosen unique field.','HyperlinkedRelatedField|Shows a URL to the related object.']],
+    [23,'✅','validators','Reusable validation rules.',['UniqueValidator|Field value must be unique in the model.','UniqueTogetherValidator|A combination of fields must be unique.']],
+    [24,'⚙️','settings','Global DRF configuration.',['api_settings|Read DRF settings in code.','REST_FRAMEWORK = {...}|Settings dict in settings.py: auth, permissions, pagination, throttles.']],
+    [25,'🤝','negotiation','Chooses the response format (JSON, HTML...).',['DefaultContentNegotiation|Picks the renderer from the Accept header.']],
+    [26,'🏷️','versioning','Support v1, v2... of your API.',['URLPathVersioning|/api/v1/users/','AcceptHeaderVersioning|Version in the Accept header.','NamespaceVersioning|Version via URL namespace.','QueryParameterVersioning|?version=v1']],
+    [27,'📐','schemas','Generate API documentation schemas.',['AutoSchema|Default schema generator for views.','get_schema_view|Creates a schema endpoint.','+ drf-spectacular|Third-party: OpenAPI 3 + Swagger UI.|accent-blue']],
+    [28,'🧪','test','Tools for testing your API.',['APIClient|Test client that can send API requests.','APITestCase|TestCase class with self.client = APIClient().','APIRequestFactory|Build request objects to test views directly.']],
+    [29,'🧰','utils','Internal helper modules.',['model_meta|Reads model field/relation info.','encoders.JSONEncoder|Encodes datetime, Decimal, UUID to JSON.','serializer_helpers|ReturnDict, ReturnList and similar.']],
+    [30,'ℹ️','metadata','Describes the API for OPTIONS requests.',['SimpleMetadata|Default metadata class.','OPTIONS request|Returns allowed methods and field info.']]
+  ]},
+  { tab:'31–40 · Extras & Packages', root:'DRF + बाहिरी Packages', rootTip:'DRF extras plus popular external packages: JWT, django-filter, CORS.',
+    mods:[
+    [31,'📚','serializers.ListSerializer','Serializer that handles many objects.',['many=True|Serialize or validate a list of objects.','bulk create/update|Override create()/update() on ListSerializer.']],
+    [32,'🧩','Serializer Meta options','Options inside class Meta of ModelSerializer.',['model|The model to serialize.','fields|Fields to include.','exclude|Fields to leave out.','read_only_fields|Fields that cannot be written.','extra_kwargs|Per-field options without redeclaring.','depth|How deep to nest related objects.']],
+    [33,'🎬','decorators.action','Adds custom routes to a ViewSet.',['@action(detail, methods, url_path)|detail=True for one object, False for the list.']],
+    [34,'🔍','get_object_or_404','Fetch an object or raise 404.',['generics.get_object_or_404|DRF version; raises Http404, which DRF turns into a 404 response.']],
+    [35,'🧊','viewsets.GenericViewSet','ViewSet without actions: you pick the mixins.',['+ mixins|Combine with Create/List/etc mixins.','get_serializer_class()|Return a different serializer per action.','get_permissions()|Return different permissions per action.']],
+    [36,'⏱️','Custom Throttle','Write your own rate limit.',['SimpleRateThrottle|Base class for custom throttles.','scope|Name used to look up the rate in settings.','get_cache_key|Decides who is being limited (IP, user...).']],
+    [37,'🛂','Custom Permission','Write your own access rule.',['BasePermission|Implement has_permission / has_object_permission.','SAFE_METHODS|GET, HEAD, OPTIONS: read-only methods.']],
+    [38,'🔑','rest_framework_simplejwt','Third-party JWT authentication.',['TokenObtainPairView|Login: returns access + refresh tokens.|accent-blue','TokenRefreshView|Exchange refresh token for a new access token.|accent-blue','JWTAuthentication|Authentication class that checks the JWT.|accent-blue','RefreshToken|Token class: create or blacklist tokens in code.|accent-blue']],
+    [39,'🧲','django_filters','Third-party field-level filtering.',['DjangoFilterBackend|Filter backend for ?field=value filters.|accent-blue','FilterSet|Define the filters for a model.|accent-blue']],
+    [40,'🌐','corsheaders','Third-party: lets a React frontend call your API.',['CorsMiddleware|Add to MIDDLEWARE, high in the list.|accent-blue','CORS_ALLOWED_ORIGINS|List of frontend origins allowed to call the API.|accent-blue']]
+  ]},
+  { tab:'41–50 · Production', root:'Production-level DRF', rootTip:'Patterns and packages used in real production DRF projects.',
+    mods:[
+    [41,'🔄','to_representation / to_internal_value','Hooks to customise a serializer\'s output and input.',['Serializer को output/input बदल्ने|to_representation changes output; to_internal_value changes incoming data.']],
+    [42,'🪆','Nested Serializer','Serializer inside a serializer.',['create() / update() override|Nested writes are not automatic: handle them yourself.']],
+    [43,'🪝','Perform hooks','Small hooks inside the create/update/delete flow.',['perform_create|Runs on save, e.g. serializer.save(user=request.user).','perform_update|Runs when saving an update.','perform_destroy|Runs on delete, e.g. soft delete.']],
+    [44,'🛠️','View override methods','Customise behaviour per request.',['get_queryset|Filter data per user or request.','get_serializer_class|Different serializer per action.','get_serializer_context|Pass extra data to the serializer.','get_object|Customise how one object is fetched.']],
+    [45,'🚀','Query optimization','Avoid N+1 queries.',['select_related|JOIN for ForeignKey / OneToOne.','prefetch_related|Extra query for ManyToMany / reverse relations.']],
+    [46,'🪪','Custom Authentication','Write your own auth scheme.',['BaseAuthentication|Base class to subclass.','authenticate()|Return (user, auth) or None.']],
+    [47,'🚨','Custom Exception Handler','One consistent error format.',['exception_handler|Set EXCEPTION_HANDLER in REST_FRAMEWORK settings.']],
+    [48,'📖','drf_spectacular','Third-party OpenAPI / Swagger docs.',['extend_schema|Decorator to describe a view in the docs.|accent-blue','SpectacularSwaggerView|Serves the Swagger UI page.|accent-blue']],
+    [49,'🔒','transaction.atomic','All-or-nothing database changes.',['atomic|Wrap code that must fully succeed or roll back.','ATOMIC_REQUESTS|DB setting: wrap every request in a transaction.']],
+    [50,'📦','Deployment packages','Typical production deployment stack.',['gunicorn|Production WSGI server.|accent-blue','whitenoise|Serves static files.|accent-blue','python-decouple|Keeps secrets in .env.|accent-blue','dj-database-url|Database config from a URL string.|accent-blue']]
+  ]}];
+
+  function esc(t){return String(t).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+  function w(t){ // allow clean line breaks inside long identifiers
+    return esc(t).replace(/_/g,'_<wbr>').replace(/\./g,'.<wbr>').replace(/([a-z])([A-Z])/g,'$1<wbr>$2');
+  }
+  function build(i){
+    var d=P[i], h='<section class="panel" id="p'+i+'" hidden><div class="tree"><div class="root-container">'
+      +'<div class="box root" data-tooltip="'+esc(d.rootTip)+'">📦 '+esc(d.root)+'</div><div class="stem"></div><div class="modules">';
+    d.mods.forEach(function(m){
+      h+='<div class="module"><div class="box level1" data-tooltip="'+esc(m[3])+'"><span><b class="n">'+m[0]+'</b> '+m[1]+' '+w(m[2])+'</span></div>'
+        +'<div class="module-content"><div class="child">';
+      m[4].forEach(function(c){
+        var a=c.split('|');
+        h+='<div class="box level2 '+(a[2]||'')+'" data-tooltip="'+esc(a[1])+'">'+w(a[0])+'</div>';
+      });
+      h+='</div></div></div>';
+    });
+    return h+'</div></div></div></section>';
+  }
+
+  var tabs=document.getElementById('tabs'), extra=document.getElementById('extra'), html='';
+  for(var i=1;i<P.length;i++) html+=build(i);
+  extra.innerHTML=html;
+  P.forEach(function(d,i){
+    var b=document.createElement('button');
+    b.className='tab'; b.type='button'; b.setAttribute('role','tab'); b.textContent=d.tab;
+    b.addEventListener('click',function(){show(i);});
+    tabs.appendChild(b);
+  });
+  function show(n){
+    P.forEach(function(_,i){
+      document.getElementById('p'+i).hidden=(i!==n);
+      tabs.children[i].setAttribute('aria-selected',i===n?'true':'false');
+    });
+    document.getElementById('tip').style.opacity='0';
+    document.querySelector('.canvas').scrollLeft=0;
+    history.replaceState(null,'','#'+(n+1));
+  }
+  var start=parseInt((location.hash||'#1').slice(1),10)-1;
+  show(start>=0&&start<P.length?start:0);
+})();
+</script>
+</body>
+</html>
